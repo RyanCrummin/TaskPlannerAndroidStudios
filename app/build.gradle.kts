@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("kapt")
 }
 
 android {
@@ -40,6 +41,7 @@ android {
         compose = true
     }
 }
+val roomVersion = "2.6.1" // stable version compatible with your setup
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -66,4 +68,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.navigation:navigation-compose:2.7.0")
     implementation("androidx.compose.material3:material3-window-size-class:1.2.0")
+    implementation("androidx.room:room-runtime:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion") // for annotation processing
+    implementation("androidx.room:room-ktx:$roomVersion") // Kotlin extensions
+
+
 }
+
+
