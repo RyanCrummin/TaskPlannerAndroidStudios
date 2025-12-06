@@ -1,5 +1,7 @@
 package com.example.taskplanner
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -32,143 +35,117 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        TopButtonsRow(
-            onTodayClick = onTodayClick,
-            onUpcomingClick = onUpcomingClick,
-            onAddTaskClick = onAddTaskClick
-        )
 
-        NotesSection(viewModel = viewModel, onAddNoteClick = onAddNoteClick)
-        OverdueTasksSection(onOverdueClick = onOverdueClick)
-        CalendarSection(onCalendarClick = onCalendarClick)
-    }
-}
-
-
-@Composable
-private fun TopButtonsRow(
-    onTodayClick: () -> Unit,
-    onUpcomingClick: () -> Unit,
-    onAddTaskClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Button(
-            onClick = onTodayClick,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-            modifier = Modifier.weight(1f)
-        ) { Text(text = "Today's Tasks", color = Color.White) }
-
-        Button(
-            onClick = onUpcomingClick,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF87CEEB)),
-            modifier = Modifier.weight(1f)
-        ) { Text(text = "Upcoming Tasks", color = Color.Black) }
-
-        Button(
-            onClick = onAddTaskClick,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FF00)),
-            modifier = Modifier.weight(1f)
-        ) { Text(text = "Add Tasks", color = Color.Black) }
-    }
-}
-
-@Composable
-private fun NotesSection(
-    viewModel: HomeViewModel,
-    onAddNoteClick: () -> Unit
-) {
-    // Collect notes from ViewModel
-    val notes = viewModel.notes.collectAsState().value
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFAB82FF))
-            .padding(16.dp)
-    ) {
+        /** --- Top Buttons --- **/
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(text = "Notes", color = Color.White, fontSize = 18.sp)
-            TextButton(onClick = onAddNoteClick) {
-                Text(text = "Add Note", color = Color.White)
-            }
+            ElevatedButton(
+                onClick = onTodayClick,
+                modifier = Modifier.weight(1f)
+            ) { Text("Today") }
+
+            ElevatedButton(
+                onClick = onUpcomingClick,
+                modifier = Modifier.weight(1f)
+            ) { Text("Upcoming") }
+
+            FilledTonalButton(
+                onClick = onAddTaskClick,
+                modifier = Modifier.weight(1f)
+            ) { Text("Add Task") }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        /** --- Notes Card --- **/
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.elevatedCardElevation(6.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Notes",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-        if (notes.isEmpty()) {
-            Text(text = "No notes yet", color = Color.White)
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                notes.forEach { note ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFBAA0FF))
-                    ) {
-                        Column(modifier = Modifier.padding(8.dp)) {
-                            Text(
-                                note.title,
-                                color = Color.White,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                note.content,
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                    TextButton(onClick = onAddNoteClick) {
+                        Text("Add")
+                    }
+                }
+
+                if (notes.isEmpty()) {
+                    Text(
+                        "No notes yet",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        notes.forEach { note ->
+                            ElevatedCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.elevatedCardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        note.title,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        note.content,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    }
-}
-@Composable
-private fun OverdueTasksSection(
-    onOverdueClick: () -> Unit = {}
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-            .background(Color(0xFFFF1493))
-            .clickable { onOverdueClick() }, // placeholder click
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Over-Due Tasks",
-            color = Color.White,
-            style = MaterialTheme.typography.titleMedium
-        )
+
+        /** --- Overdue --- **/
+        ElevatedCard(
+            onClick = onOverdueClick,
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.elevatedCardElevation(6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Overdue Tasks", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+
+        /** --- Calendar --- **/
+        ElevatedCard(
+            onClick = onCalendarClick,
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.elevatedCardElevation(6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(40.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Calendar", style = MaterialTheme.typography.titleMedium)
+            }
+        }
     }
 }
 
-@Composable
-private fun CalendarSection(
-    onCalendarClick: () -> Unit = {}
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(Color(0xFF0000FF))
-            .clickable { onCalendarClick() }, // placeholder click
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Calendar",
-            color = Color.White,
-            style = MaterialTheme.typography.titleMedium
-        )
-    }
-}
 
