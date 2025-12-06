@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,48 +25,44 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             viewModel = viewModel,
                             onTodayClick = { navController.navigate("todays_tasks") },
-                            onUpcomingClick = { navController.navigate("upcoming_tasks") }, // placeholder
+                            onUpcomingClick = { navController.navigate("upcoming_tasks") },
                             onAddTaskClick = { navController.navigate("addTask") },
-                            onAddNoteClick = { navController.navigate("addNote") } // placeholder
-                        )
-                    }
-
-                    // Todays Tasks Screen
-                    composable("todays_tasks") {
-                        val todayTasks = listOf(
-                            Task(1, "Finish Compose screen"),
-                            Task(2, "Review project tasks"),
-                            Task(3, "Plan tomorrow's tasks")
-                        )
-
-                        TodaysTasksScreen(
-                            tasks = todayTasks,
-                            onTaskClick = { task ->
-                                println("Clicked on: ${task.title}")
-                            },
-                            onBack = { navController.popBackStack() } // back to home
+                            onAddNoteClick = { navController.navigate("addNote") }
                         )
                     }
 
                     // Add Task Screen
                     composable("addTask") {
                         AddTaskScreen(
-                            onSaveTask = { task ->
-                                viewModel.addTask(task)
+                            viewModel = viewModel,
+                            onSaveTask = {
+                                // Task object already added inside AddTaskScreen
                                 navController.popBackStack()
                             },
                             onCancel = { navController.popBackStack() }
                         )
                     }
 
-                    // Upcoming Tasks Screen (placeholder)
-                    composable("upcoming_tasks") {
-                        // TODO: Implement UpcomingTasksScreen
-                    }
-
-                    // Add Note Screen (placeholder)
+                    // Add Note Screen
                     composable("addNote") {
-                        // TODO: Implement AddNoteScreen
+                        AddNotesScreen(
+                            viewModel = viewModel,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    // Today's Tasks Screen
+                    composable("todays_tasks") {
+                        TodaysTasksScreen(
+                            viewModel = viewModel,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    // Upcoming Tasks Screen
+                    composable("upcoming_tasks") {
+                        UpcomingTasksScreen(
+                            viewModel = viewModel,
+                            onBack = { navController.popBackStack() }
+                        )
                     }
                 }
             }

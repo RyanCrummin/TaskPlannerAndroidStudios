@@ -1,4 +1,7 @@
 package com.example.taskplanner
 
-class Note {
-}
+data class Note(
+    val id: Int, // auto-increment later if using Room
+    val title: String,
+    val content: String
+)

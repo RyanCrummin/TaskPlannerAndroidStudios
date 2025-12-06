@@ -5,52 +5,74 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
+    viewModel: HomeViewModel,
     onSaveTask: (Task) -> Unit,
     onCancel: () -> Unit
 ) {
+    // Collect current tasks
+    val tasks by viewModel.todayTasks.collectAsState()
+
+    // Form state
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var dueDate by remember { mutableStateOf(LocalDate.now()) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Add Task") })
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+    // Generate next task ID
+    val nextId = (tasks.maxOfOrNull { it.id } ?: 0) + 1
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        Text("Add New Task", style = MaterialTheme.typography.titleLarge)
+
+        OutlinedTextField(
+            value = title,
+            onValueChange = { title = it },
+            label = { Text("Title") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // TODO: Replace with proper date picker
+        OutlinedTextField(
+            value = dueDate.toString(),
+            onValueChange = { /* parse date if needed */ },
+            label = { Text("Due Date") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(onClick = {
-                    onSaveTask(Task(id = (0..1000).random(), title = title, description = description))
-                }) {
-                    Text("Save")
-                }
-                OutlinedButton(onClick = onCancel) {
-                    Text("Cancel")
-                }
+            Button(onClick = {
+                val newTask = Task(
+                    id = nextId,
+                    title = title,
+                    description = description,
+                    dueDate = dueDate
+                )
+                viewModel.addTask(newTask)
+                onSaveTask(newTask)
+            }) {
+                Text("Save")
+            }
+
+            OutlinedButton(onClick = onCancel) {
+                Text("Cancel")
             }
         }
     }
