@@ -36,9 +36,9 @@ fun TodaysTasksScreen(viewModel: HomeViewModel, onBack: () -> Unit) {
             IconButton(onClick = { onBack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
-            Text("Today's Tasks", style = MaterialTheme.typography.titleLarge)
+            Text("Today's Tasks", style = MaterialTheme.typography.titleLarge) // TITLE
             Spacer(modifier = Modifier.weight(1f))
-            TextButton(onClick = { editMode = !editMode }) {
+            TextButton(onClick = { editMode = !editMode }) { // Button for Edit mode
                 Text(if (editMode) "Done" else "Edit")
             }
         }
