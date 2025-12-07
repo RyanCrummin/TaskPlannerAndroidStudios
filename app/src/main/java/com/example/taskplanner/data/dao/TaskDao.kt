@@ -10,7 +10,7 @@ interface TaskDao {
     fun getAllTasks(): Flow<List<Task>>
     @Query("SELECT * FROM tasks WHERE date = :date")
     fun getTasksForDate(date: String): Flow<List<Task>>
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(task: Task)
     @Update
     suspend fun update(task: Task)

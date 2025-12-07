@@ -7,14 +7,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.*
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.taskplanner.data.entities.Task
-import com.example.taskplanner.data.entities.Note
 import com.example.taskplanner.data.repository.NoteRepository
 import com.example.taskplanner.data.repository.TaskRepository
 import com.example.taskplanner.data.database.TaskDatabase
@@ -40,12 +37,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModel: HomeViewModel = viewModel(factory = factory)
 
-                val today = Calendar.getInstance()
-                val day = today.get(Calendar.DAY_OF_MONTH)
-                val month = today.get(Calendar.MONTH) + 1 // Months start at 0
-                val year = today.get(Calendar.YEAR)
-                val dateString = "$year-$month-$day" // Format as you like
-
                 Surface(color = MaterialTheme.colorScheme.background) {
                     AppScaffold(logoResId = R.drawable.app_logo) {
                         NavHost(navController = navController, startDestination = "home") {
@@ -67,16 +58,10 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onSaveTask = { navController.popBackStack() },
                                     onCancel = { navController.popBackStack() },
-                                    onAddTask = { title, description, date ->
-                                        val task = Task(
-                                            title = title,
-                                            description = description,
-                                            date = date,
-                                            isDone = false
-                                        )
-                                        viewModel.addTask(task)
+                                    onAddTask = { title, description, date, photoPath ->
+                                        // Use the same 'viewModel' from this scope
+                                        viewModel.addTask(title, description, date, photoPath)
                                     }
-
                                 )
                             }
 

@@ -8,7 +8,7 @@ import com.example.taskplanner.data.dao.NoteDao
 import com.example.taskplanner.data.dao.TaskDao
 import com.example.taskplanner.data.entities.Task
 import com.example.taskplanner.data.entities.Note
-@Database(entities = [Task::class, Note::class], version = 1, exportSchema = false)
+@Database(entities = [Task::class, Note::class], version = 2, exportSchema = true)
 abstract class TaskDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao

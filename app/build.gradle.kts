@@ -42,6 +42,7 @@ android {
     }
 }
 val roomVersion = "2.6.1" // stable version compatible with your setup
+val cameraxVersion = "1.3.0"
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -72,6 +73,12 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion") // for annotation processing
     implementation("androidx.room:room-ktx:$roomVersion") // Kotlin extensions
+    // CameraX
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation ("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation ("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation ("androidx.camera:camera-view:1.3.0")
+    implementation ("androidx.camera:camera-extensions:1.3.0")
 
 
 }

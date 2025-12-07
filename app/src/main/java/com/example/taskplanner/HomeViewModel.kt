@@ -1,6 +1,5 @@
 package com.example.taskplanner
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskplanner.data.entities.Note
@@ -15,54 +14,69 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import kotlin.collections.emptyList
 
-    class HomeViewModel(
-        private val TaskRepository: TaskRepository,
-        private val NoteRepository: NoteRepository)
-        : ViewModel() {
-        val allTasks2 = TaskRepository.allTasks
+class HomeViewModel(
+    private val taskRepository: TaskRepository,
+    private val noteRepository: NoteRepository
+) : ViewModel() {
 
-        val overdueTasks: StateFlow<List<Task>> = allTasks2
-            .map { list -> list.filter { it.isOverdue() } }
-            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-        fun Task.isOverdue(): Boolean{
-            return this.date < LocalDate.now().toString() && !this.isDone
-        }
+    val allTasks2 = taskRepository.allTasks
+
+    val overdueTasks: StateFlow<List<Task>> = allTasks2
+        .map { list -> list.filter { it.isOverdue() } }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    val upcomingTasks: StateFlow<List<Task>> = allTasks2
+        .map { list -> list.filter { it.upcoming() } }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    private fun Task.isOverdue(): Boolean {
+        return this.date < LocalDate.now().toString()
+    }
+
+    private fun Task.upcoming(): Boolean {
+        return this.date > LocalDate.now().toString()
+    }
 
     // TASK SECTION
     val allTasks: StateFlow<List<Task>> =
-        TaskRepository.allTasks.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        taskRepository.allTasks.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun tasksForDate(date: String) = TaskRepository.getTasksForDate(date)
+    fun tasksForDate(date: String) = taskRepository.getTasksForDate(date)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun addTask(task: Task) {
-        viewModelScope.launch { TaskRepository.insert(task) }
+    fun addTask(title: String, description: String, date: String, photoPath: String?) {
+        viewModelScope.launch {
+            val task = Task(
+                title = title,
+                description = description,
+                date = date,
+                photoPath = photoPath
+            )
+            taskRepository.insert(task)
+        }
     }
 
     fun updateTask(task: Task) {
-        viewModelScope.launch { TaskRepository.update(task) }
+        viewModelScope.launch { taskRepository.update(task) }
     }
 
     fun deleteTask(task: Task) {
-        viewModelScope.launch { TaskRepository.delete(task) }
+        viewModelScope.launch { taskRepository.delete(task) }
     }
-    // END OF TASK SECTION
 
     // NOTE SECTION
     val allNotes: StateFlow<List<Note>> =
-        NoteRepository.allNotes.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        noteRepository.allNotes.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun addNote(note: Note) {
-        viewModelScope.launch { NoteRepository.insert(note) }
+        viewModelScope.launch { noteRepository.insert(note) }
     }
 
     fun updateNote(note: Note) {
-        viewModelScope.launch { NoteRepository.update(note) }
+        viewModelScope.launch { noteRepository.update(note) }
     }
 
     fun deleteNote(note: Note) {
-        viewModelScope.launch { NoteRepository.delete(note) }
+        viewModelScope.launch { noteRepository.delete(note) }
     }
-
-
 }
