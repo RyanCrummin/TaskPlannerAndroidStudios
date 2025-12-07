@@ -92,7 +92,7 @@ fun HomeScreen(
                         Checkbox(
                             checked = task.isDone,
                             onCheckedChange = { isChecked ->
-                                // mirror Today's behavior — just mark done, don't delete
+                                // mirror Today's behavior for checkbox to mark things done
                                 viewModel.updateTask(task.copy(isDone = isChecked))
                             }
                         )
@@ -242,7 +242,7 @@ fun HomeScreen(
     }
 }
 
-/** EditNoteDialog kept local to this file for convenience **/
+
 @Composable
 fun EditNoteDialog(
     note: Note,

@@ -21,18 +21,18 @@ class HomeViewModel(
     private val noteRepository: NoteRepository
 ) : ViewModel() {
 
-    val allTasks2 = taskRepository.allTasks
+    val allTasks2 = taskRepository.allTasks //
 
     @RequiresApi(Build.VERSION_CODES.O)
     val overdueTasks: StateFlow<List<Task>> = allTasks2
         .map { list -> list.filter { it.isOverdue() } }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
+    // value for overdue tasks
     @RequiresApi(Build.VERSION_CODES.O)
     val upcomingTasks: StateFlow<List<Task>> = allTasks2
         .map { list -> list.filter { it.upcoming() } }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
+// checks to see if the task is overdue
     @RequiresApi(Build.VERSION_CODES.O)
     private fun Task.isOverdue(): Boolean {
         return this.date < LocalDate.now().toString()

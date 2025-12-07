@@ -12,3 +12,9 @@ data class Task(
     val isDone: Boolean = false,
     val photoPath: String? = null
 )
+
+/*
+This is the entity class for the Tasks
+
+This is just initialising the data structure for what data will be passed to the db
+ */

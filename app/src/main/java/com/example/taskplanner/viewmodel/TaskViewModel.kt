@@ -16,18 +16,19 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
     val tasks: StateFlow<List<Task>> = repository.allTasks
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    // add task function
     fun addTask(task: Task) {
         viewModelScope.launch {
             repository.insert(task)
         }
     }
-
+// update task function
     fun updateTask(task: Task) {
         viewModelScope.launch {
             repository.update(task)
         }
     }
-
+// delete task function
     fun deleteTask(task: Task) {
         viewModelScope.launch {
             repository.delete(task)

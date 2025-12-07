@@ -28,7 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+/*
 
+AppScaffold is what I used to style my entire app
+
+This Composable wraps the app entirely applying its styles to all pages
+
+ */
 @Composable
 fun AppScaffold(
     logoResId: Int,
@@ -48,7 +54,7 @@ fun AppScaffold(
                 initialValue = 0f,
                 targetValue = 1f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(1500, easing = LinearEasing),
+                    animation = tween(1500, easing = LinearEasing), // animation for the logo
                     repeatMode = RepeatMode.Reverse
                 )
             )
