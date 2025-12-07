@@ -6,23 +6,36 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.taskplanner.data.entities.Task
+import com.example.taskplanner.data.repository.NoteRepository
+import com.example.taskplanner.data.repository.TaskRepository
+import com.example.taskplanner.data.database.TaskDatabase
 import com.example.taskplanner.ui.theme.TaskPlannerTheme
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize database and repositories
+        val db = TaskDatabase.getDatabase(application)
+        val taskRepository = TaskRepository(db.taskDao())
+        val noteRepository = NoteRepository(db.noteDao())
+
+        // Initialize ViewModelFactory
+        val factory = HomeViewModelFactory(taskRepository, noteRepository)
+
         setContent {
             TaskPlannerTheme {
                 val navController = rememberNavController()
-                val viewModel: HomeViewModel = viewModel()
+                val viewModel: HomeViewModel = viewModel(factory = factory)
 
                 Surface(color = MaterialTheme.colorScheme.background) {
                     AppScaffold(logoResId = R.drawable.app_logo) {
@@ -43,11 +56,12 @@ class MainActivity : ComponentActivity() {
                             composable("addTask") {
                                 AddTaskScreen(
                                     viewModel = viewModel,
-                                    onSaveTask = {
-                                        // Task object already added inside AddTaskScreen
-                                        navController.popBackStack()
-                                    },
-                                    onCancel = { navController.popBackStack() }
+                                    onSaveTask = { navController.popBackStack() },
+                                    onCancel = { navController.popBackStack() },
+                                    onAddTask = { title, description, date, photoPath ->
+                                        // Use the same 'viewModel' from this scope
+                                        viewModel.addTask(title, description, date, photoPath)
+                                    }
                                 )
                             }
 
@@ -58,6 +72,7 @@ class MainActivity : ComponentActivity() {
                                     onBack = { navController.popBackStack() }
                                 )
                             }
+
                             // Today's Tasks Screen
                             composable("todays_tasks") {
                                 TodaysTasksScreen(
@@ -65,6 +80,7 @@ class MainActivity : ComponentActivity() {
                                     onBack = { navController.popBackStack() }
                                 )
                             }
+
                             // Upcoming Tasks Screen
                             composable("upcoming_tasks") {
                                 UpcomingTasksScreen(

@@ -4,13 +4,15 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.taskplanner.data.dao.NoteDao
 import com.example.taskplanner.data.dao.TaskDao
-import com.example.taskplanner.data.entity.Task
-
-@Database(entities = [Task::class], version = 1, exportSchema = false)
+import com.example.taskplanner.data.entities.Task
+import com.example.taskplanner.data.entities.Note
+@Database(entities = [Task::class, Note::class], version = 2, exportSchema = true)
 abstract class TaskDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
+    abstract fun noteDao(): NoteDao
 
     companion object {
         @Volatile

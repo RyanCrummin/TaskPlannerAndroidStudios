@@ -3,7 +3,7 @@ package com.example.taskplanner.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.taskplanner.data.entity.Task
+import com.example.taskplanner.data.entities.Task
 import com.example.taskplanner.data.repository.TaskRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
