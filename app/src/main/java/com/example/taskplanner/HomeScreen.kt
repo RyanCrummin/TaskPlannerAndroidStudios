@@ -5,147 +5,91 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.setValue
 
-
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onTodayClick: () -> Unit = {},
-    onUpcomingClick: () -> Unit = {},
-    onAddTaskClick: () -> Unit = {},
-    onAddNoteClick: () -> Unit = {},
-    onOverdueClick: () -> Unit = {},
-    onCalendarClick: () -> Unit = {}
+    onTodayClick: () -> Unit,
+    onUpcomingClick: () -> Unit,
+    onAddTaskClick: () -> Unit,
+    onAddNoteClick: () -> Unit
 ) {
-    val notes by viewModel.notes.collectAsState()
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-
-        /** --- Top Buttons --- **/
+        // Buttons row
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            ElevatedButton(
-                onClick = onTodayClick,
-                modifier = Modifier.weight(1f)
-            ) { Text("Today") }
-
-            ElevatedButton(
-                onClick = onUpcomingClick,
-                modifier = Modifier.weight(1f)
-            ) { Text("Upcoming") }
-
-            FilledTonalButton(
-                onClick = onAddTaskClick,
-                modifier = Modifier.weight(1f)
-            ) { Text("Add Task") }
+            Button(onClick = onTodayClick) {
+                Text("Today")
+            }
+            Button(onClick = onUpcomingClick) {
+                Text("Upcoming")
+            }
+            Button(onClick = onAddTaskClick) {
+                Text("Add Task")
+            }
         }
 
-        /** --- Notes Card --- **/
-        ElevatedCard(
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Overdue Tasks Box
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.elevatedCardElevation(6.dp)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Overdue Tasks", style = MaterialTheme.typography.titleMedium)
+                val overdueTasks = viewModel.overdueTasks.collectAsState()
+                overdueTasks.value.forEach { task ->
+                    Text("- ${task.title}")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Notes Box
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        "Notes",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    TextButton(onClick = onAddNoteClick) {
-                        Text("Add")
+                    Text("My Notes", style = MaterialTheme.typography.titleMedium)
+                    Button(onClick = onAddNoteClick) {
+                        Text("Add Note")
                     }
                 }
 
-                if (notes.isEmpty()) {
-                    Text(
-                        "No notes yet",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        notes.forEach { note ->
-                            ElevatedCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.elevatedCardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Text(
-                                        note.title,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        note.content,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                            }
-                        }
-                    }
+                val notes = viewModel.allNotes.collectAsState()
+                notes.value.forEach { note ->
+                    Text("- ${note.title}")
                 }
-            }
-        }
-
-        /** --- Overdue --- **/
-        ElevatedCard(
-            onClick = onOverdueClick,
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.elevatedCardElevation(6.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Overdue Tasks", style = MaterialTheme.typography.titleMedium)
-            }
-        }
-
-        /** --- Calendar --- **/
-        ElevatedCard(
-            onClick = onCalendarClick,
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.elevatedCardElevation(6.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(40.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Calendar", style = MaterialTheme.typography.titleMedium)
             }
         }
     }
 }
+
+
 
 

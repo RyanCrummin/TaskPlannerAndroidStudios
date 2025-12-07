@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
+import com.example.taskplanner.data.entities.Task
 
 @Composable
 fun TaskCard(task: Task, onToggleDone: () -> Unit) {

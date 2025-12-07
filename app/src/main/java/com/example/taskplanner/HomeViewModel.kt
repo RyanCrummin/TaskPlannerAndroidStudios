@@ -1,74 +1,68 @@
 package com.example.taskplanner
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.runtime.mutableStateListOf
+
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.lifecycle.viewModelScope
+import com.example.taskplanner.data.entities.Note
+import com.example.taskplanner.data.entities.Task
+import com.example.taskplanner.data.repository.NoteRepository
+import com.example.taskplanner.data.repository.TaskRepository
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.collections.emptyList
 
-@RequiresApi(Build.VERSION_CODES.O)
-class HomeViewModel : ViewModel() {
+    class HomeViewModel(
+        private val TaskRepository: TaskRepository,
+        private val NoteRepository: NoteRepository)
+        : ViewModel() {
+        val allTasks2 = TaskRepository.allTasks
 
-
-    // Today's tasks
-    private val _todayTasks = MutableStateFlow<List<Task>>(emptyList())
-    val todayTasks: StateFlow<List<Task>> = _todayTasks
-
-    // Notes
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes
-
-    init {
-        // Dummy tasks for today
-        val today = LocalDate.now()
-        _todayTasks.value = listOf(
-            Task(1, "Finish Compose screen", "Implement all UI components for Home and Tasks screens", dueDate = today),
-            Task(2, "Review project tasks", "Check all pending tasks and deadlines", dueDate = today),
-            Task(3, "Plan tomorrow's tasks", "Prepare list of tasks for tomorrow", dueDate = today)
-        )
-
-        // Dummy notes
-        _notes.value = listOf(
-            Note(1, "Meeting Notes", "Discuss project timeline and milestones"),
-            Note(2, "Shopping List", "Milk, Eggs, Bread, Coffee")
-        )
-    }
-
-    // Tasks operations
-    fun toggleTaskDone(taskId: Int) {
-        _todayTasks.update { list ->
-            list.map { task ->
-                if (task.id == taskId) task.copy(isDone = !task.isDone) else task
-            }
+        val overdueTasks: StateFlow<List<Task>> = allTasks2
+            .map { list -> list.filter { it.isOverdue() } }
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        fun Task.isOverdue(): Boolean{
+            return this.date < LocalDate.now().toString() && !this.isDone
         }
-    }
+
+    // TASK SECTION
+    val allTasks: StateFlow<List<Task>> =
+        TaskRepository.allTasks.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun tasksForDate(date: String) = TaskRepository.getTasksForDate(date)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun addTask(task: Task) {
-        _todayTasks.update { list -> list + task }
+        viewModelScope.launch { TaskRepository.insert(task) }
     }
 
-    fun removeTask(taskId: Int) {
-        _todayTasks.update { list -> list.filter { it.id != taskId } }
+    fun updateTask(task: Task) {
+        viewModelScope.launch { TaskRepository.update(task) }
     }
 
-    // Notes operations
+    fun deleteTask(task: Task) {
+        viewModelScope.launch { TaskRepository.delete(task) }
+    }
+    // END OF TASK SECTION
+
+    // NOTE SECTION
+    val allNotes: StateFlow<List<Note>> =
+        NoteRepository.allNotes.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     fun addNote(note: Note) {
-        _notes.update { list -> list + note }
-    }
-    fun getNextNoteId(): Int {
-        return _notes.value.maxOfOrNull { it.id }?.plus(1) ?: 1
+        viewModelScope.launch { NoteRepository.insert(note) }
     }
 
-    fun removeNote(noteId: Int) {
-        _notes.update { list -> list.filter { it.id != noteId } }
+    fun updateNote(note: Note) {
+        viewModelScope.launch { NoteRepository.update(note) }
     }
 
-    // Optional: Get today's tasks only
-    fun getTasksForToday(): List<Task> {
-        val today = LocalDate.now()
-        return _todayTasks.value.filter { it.dueDate == today }
+    fun deleteNote(note: Note) {
+        viewModelScope.launch { NoteRepository.delete(note) }
     }
+
+
 }
