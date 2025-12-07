@@ -23,6 +23,9 @@ import java.time.format.DateTimeFormatter
 fun TodaysTasksScreen(viewModel: HomeViewModel, onBack: () -> Unit) {
     val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
     val tasks by viewModel.tasksForDate(today).collectAsState(initial = emptyList())
+    // currently editing task (null = no dialog)
+    var editingTask by remember { mutableStateOf<Task?>(null) }
+
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -45,20 +48,7 @@ fun TodaysTasksScreen(viewModel: HomeViewModel, onBack: () -> Unit) {
             }
         }
 
-        Button(
-            onClick = {
-                val newTask = Task(
-                    title = "New Task",
-                    description = "",
-                    date = today,
-                    isDone = false
-                )
-                viewModel.addTask(newTask)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Add Task")
-        }
+
     }
 }
 

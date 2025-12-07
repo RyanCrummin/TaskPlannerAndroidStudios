@@ -67,15 +67,16 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onSaveTask = { navController.popBackStack() },
                                     onCancel = { navController.popBackStack() },
-                                    onAddTask = { title, description ->
+                                    onAddTask = { title, description, date ->
                                         val task = Task(
                                             title = title,
                                             description = description,
-                                            date = dateString,
+                                            date = date,
                                             isDone = false
                                         )
                                         viewModel.addTask(task)
                                     }
+
                                 )
                             }
 

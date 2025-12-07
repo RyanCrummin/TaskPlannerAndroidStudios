@@ -38,7 +38,8 @@ fun AddNotesScreen(
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(onClick = {
                 if (title.isNotBlank() || content.isNotBlank()) {
