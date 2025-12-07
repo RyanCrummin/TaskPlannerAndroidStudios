@@ -10,7 +10,6 @@ It helps users organize daily tasks, capture photos for visual context, and stay
 Tap a date to instantly view tasks scheduled for that day.
 
 Images preview in:
-
 Overdue tasks
 Today’s tasks
 Upcoming tasks
