@@ -2,30 +2,24 @@ package com.example.taskplanner
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.setValue
 import com.example.taskplanner.data.entities.Note
 import com.example.taskplanner.data.entities.Task
+import coil.compose.rememberAsyncImagePainter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -34,23 +28,28 @@ fun HomeScreen(
     onAddTaskClick: () -> Unit,
     onAddNoteClick: () -> Unit
 ) {
-    // States
+    // Notes state
     var notesEditMode by remember { mutableStateOf(false) }
     var showNoteEditDialog by remember { mutableStateOf(false) }
     var noteBeingEdited by remember { mutableStateOf<Note?>(null) }
 
+    // Overdue tasks state
     var overdueEditMode by remember { mutableStateOf(false) }
     var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)
-        .verticalScroll(rememberScrollState())) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
 
         // ---------------- Buttons Row ----------------
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Button(onClick = onTodayClick) { Text("Today") }
             Button(onClick = onUpcomingClick) { Text("Upcoming") }
@@ -59,76 +58,90 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-            // ---------------- Overdue Tasks Box ----------------
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-            ) {
-                val overdueTasks by viewModel.overdueTasks.collectAsState(initial = emptyList())
+        // ---------------- Overdue Tasks Box ----------------
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+        ) {
+            val overdueTasks by viewModel.overdueTasks.collectAsState(initial = emptyList())
 
-                Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Overdue Tasks", style = MaterialTheme.typography.titleMedium)
+                    TextButton(onClick = { overdueEditMode = !overdueEditMode }) {
+                        Text(if (overdueEditMode) "Done" else "Edit")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                overdueTasks.forEach { task ->
+                    var expanded by remember { mutableStateOf(false) }
+
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = !expanded }
+                            .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Overdue Tasks", style = MaterialTheme.typography.titleMedium)
-                        TextButton(onClick = { overdueEditMode = !overdueEditMode }) {
-                            Text(if (overdueEditMode) "Done" else "Edit")
-                        }
-                    }
+                        Checkbox(
+                            checked = task.isDone,
+                            onCheckedChange = { isChecked ->
+                                // mirror Today's behavior — just mark done, don't delete
+                                viewModel.updateTask(task.copy(isDone = isChecked))
+                            }
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    overdueTasks.forEach { task ->
-                        var expanded by remember { mutableStateOf(false) }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { expanded = !expanded }
-                                .padding(vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = task.isDone,
-                                onCheckedChange = { isChecked ->
-                                    viewModel.updateTask(task.copy(isDone = isChecked)) }
-                            )
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(task.title, style = MaterialTheme.typography.bodyLarge)
-                                if (expanded && task.description.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        task.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(task.title, style = MaterialTheme.typography.bodyLarge)
+                            if (expanded && task.description.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    task.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
                             }
 
-                            if (overdueEditMode) {
-                                IconButton(onClick = { taskBeingEdited = task }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit Task")
-                                }
-                            }
-
-                            IconButton(onClick = { viewModel.deleteTask(task) }) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete Task",
-                                    tint = MaterialTheme.colorScheme.error
+                            // show image when expanded (if exists)
+                            if (expanded && task.photoPath != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                androidx.compose.foundation.Image(
+                                    painter = rememberAsyncImagePainter(task.photoPath),
+                                    contentDescription = "Task Photo",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(140.dp)
                                 )
                             }
                         }
 
-                        Divider(color = Color.Black.copy(alpha = 0.1f))
+                        if (overdueEditMode) {
+                            IconButton(onClick = { taskBeingEdited = task }) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Task")
+                            }
+                        }
+
+                        IconButton(onClick = { viewModel.deleteTask(task) }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete Task",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
+
+                    Divider(color = Color.Black.copy(alpha = 0.1f))
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // ---------------- Notes Box ----------------
         Card(
@@ -201,6 +214,7 @@ fun HomeScreen(
                     }
                 }
 
+                // Edit Note Dialog
                 if (showNoteEditDialog && noteBeingEdited != null) {
                     EditNoteDialog(
                         note = noteBeingEdited!!,
@@ -228,50 +242,45 @@ fun HomeScreen(
     }
 }
 
-        @Composable
-        fun EditNoteDialog(
-            note: Note,
-            onDismiss: () -> Unit,
-            onSave: (Note) -> Unit
-        ) {
-            var title by remember { mutableStateOf(note.title) }
-            var content by remember { mutableStateOf(note.content) }
+/** EditNoteDialog kept local to this file for convenience **/
+@Composable
+fun EditNoteDialog(
+    note: Note,
+    onDismiss: () -> Unit,
+    onSave: (Note) -> Unit
+) {
+    var title by remember { mutableStateOf(note.title) }
+    var content by remember { mutableStateOf(note.content) }
 
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text("Edit Note") },
-                text = {
-                    Column {
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            label = { Text("Title") }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = content,
-                            onValueChange = { content = it },
-                            label = { Text("Description") }
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onSave(note.copy(title = title, content = content))
-                    }) {
-                        Text("Save")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                }
-            )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Note") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    label = { Text("Description") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(note.copy(title = title, content = content))
+            }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
         }
-
-
-
-
-
-
+    )
+}

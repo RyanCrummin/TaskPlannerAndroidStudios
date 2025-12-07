@@ -2,6 +2,7 @@ package com.example.taskplanner
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.example.taskplanner.data.entities.Task
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -65,14 +67,31 @@ fun UpcomingTasksScreen(viewModel: HomeViewModel, onBack: () -> Unit) {
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(task.title, style = MaterialTheme.typography.bodyLarge)
-                        if (expanded && task.description.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                task.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        if (expanded) {
+
+                            // DESCRIPTION
+                            if (task.description.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    task.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // PHOTO
+                            if (task.photoPath != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Image(
+                                    painter = rememberAsyncImagePainter(task.photoPath),
+                                    contentDescription = "Task Photo",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(180.dp)
+                                )
+                            }
                         }
+
                     }
 
                     if (editMode) {

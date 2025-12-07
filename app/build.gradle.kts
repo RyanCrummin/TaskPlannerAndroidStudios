@@ -79,6 +79,8 @@ dependencies {
     implementation ("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation ("androidx.camera:camera-view:1.3.0")
     implementation ("androidx.camera:camera-extensions:1.3.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
 
 }

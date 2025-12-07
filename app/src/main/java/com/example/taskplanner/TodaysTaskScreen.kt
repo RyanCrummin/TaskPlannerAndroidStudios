@@ -2,6 +2,7 @@ package com.example.taskplanner
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.example.taskplanner.data.entities.Task
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -63,14 +65,31 @@ fun TodaysTasksScreen(viewModel: HomeViewModel, onBack: () -> Unit) {
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(task.title, style = MaterialTheme.typography.bodyLarge)
-                        if (expanded && task.description.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                task.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        if (expanded) {
+
+                            // DESCRIPTION
+                            if (task.description.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    task.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // PHOTO
+                            if (task.photoPath != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Image(
+                                    painter = rememberAsyncImagePainter(task.photoPath),
+                                    contentDescription = "Task Photo",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(180.dp)
+                                )
+                            }
                         }
+
                     }
 
                     if (editMode) {
@@ -105,50 +124,36 @@ fun TodaysTasksScreen(viewModel: HomeViewModel, onBack: () -> Unit) {
     }
 }
 
-
-
-
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TaskItem(
-    task: Task,
-    onCheckChange: (Task) -> Unit,
-    onDeleteClick: () -> Unit,
-    onEditClick: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = task.isDone,
-                onCheckedChange = { isChecked -> onCheckChange(task.copy(isDone = isChecked)) }
-            )
+fun TaskItem(task: Task, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
 
-            Text(task.title, modifier = Modifier.weight(1f).padding(start = 8.dp))
+            Text(task.title, style = MaterialTheme.typography.titleLarge)
+            Text(task.description, style = MaterialTheme.typography.bodyMedium)
+            Text(task.date, style = MaterialTheme.typography.bodySmall)
 
-            IconButton(onClick = onEditClick) { Icon(Icons.Default.Edit, contentDescription = "Edit Task") }
-            IconButton(onClick = onDeleteClick) { Icon(Icons.Default.Delete, contentDescription = "Delete Task") }
-        }
+            if (task.photoPath != null) {
+                Spacer(modifier = Modifier.height(10.dp))
 
-        if (task.description.isNotBlank()) Text(task.description, modifier = Modifier.padding(start = 32.dp))
-
-        task.photoPath?.let { path ->
-            val bitmap = android.graphics.BitmapFactory.decodeFile(path)
-            bitmap?.let {
-                androidx.compose.foundation.Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "Task Photo",
+                Image(
+                    painter = rememberAsyncImagePainter(task.photoPath),
+                    contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(8.dp)
+                        .height(150.dp)
                 )
             }
         }
-
-        Divider()
     }
 }
+
 
 @Composable
 fun EditTaskDialog(
@@ -196,5 +201,22 @@ fun EditTaskDialog(
             TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
+}
+@Composable
+fun FullscreenImageScreen(photoPath: String, onBack: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = rememberAsyncImagePainter(photoPath),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+        ) {
+            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+        }
+    }
 }
 

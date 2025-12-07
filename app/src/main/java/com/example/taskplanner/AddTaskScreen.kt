@@ -1,6 +1,8 @@
 package com.example.taskplanner
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -15,17 +17,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import coil.compose.rememberAsyncImagePainter
 import com.example.taskplanner.data.entities.Task
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import com.google.accompanist.permissions.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
@@ -87,16 +93,29 @@ fun AddTaskScreen(
 
         // Take photo button
         Button(onClick = { showCamera = true }) { Text("Take Photo") }
+        if (photoPath != null) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (showCamera) {
-            CameraCapture(
-                onImageCaptured = {
-                    photoPath = it
-                    showCamera = false
-                },
-                onError = { Log.e("Camera", "Photo capture failed") }
+            androidx.compose.foundation.Image(
+                painter = rememberAsyncImagePainter(photoPath),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
             )
         }
+        if (showCamera) {
+            CameraPermissionWrapper {
+                CameraCapture(
+                    onImageCaptured = {
+                        photoPath = it
+                        showCamera = false
+                    },
+                    onError = { Log.e("Camera", "Photo capture failed") }
+                )
+            }
+        }
+
 
         Spacer(Modifier.height(20.dp))
 
@@ -135,6 +154,33 @@ fun AddTaskScreen(
 }
 
 
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun CameraPermissionWrapper(
+    onGranted: @Composable () -> Unit
+) {
+    val permissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+
+    LaunchedEffect(Unit) {
+        permissionState.launchPermissionRequest()
+    }
+
+    when {
+        permissionState.status.isGranted -> {
+            onGranted()
+        }
+
+        permissionState.status.shouldShowRationale -> {
+            Text("Camera permission is required to take photos.")
+        }
+
+        else -> {
+            Text("Camera permission denied. Enable it in settings.")
+        }
+    }
+}
+
 @Composable
 fun CameraCapture(
     onImageCaptured: (String) -> Unit,
@@ -149,14 +195,22 @@ fun CameraCapture(
 
     DisposableEffect(cameraProviderFuture) {
         val cameraProvider = cameraProviderFuture.get()
+
+        // Preview
         val preview = Preview.Builder().build().also {
             it.setSurfaceProvider(previewView.surfaceProvider)
         }
 
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
         try {
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageCapture)
+            cameraProvider.unbindAll() // unbind previous cameras
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                cameraSelector,
+                preview,
+                imageCapture
+            )
         } catch (e: Exception) {
             Log.e("CameraCapture", "Camera binding failed", e)
         }
@@ -165,14 +219,20 @@ fun CameraCapture(
     }
 
     Column(modifier = modifier) {
-        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxWidth().height(300.dp))
+        AndroidView(
+            factory = { previewView },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+        )
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
             val file = File(context.cacheDir, "task_photo_${System.currentTimeMillis()}.jpg")
             val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
+            // Use the SAME imageCapture instance bound to lifecycle
             imageCapture.takePicture(
                 outputOptions,
                 ContextCompat.getMainExecutor(context),
@@ -185,7 +245,10 @@ fun CameraCapture(
                     }
                 }
             )
-        }) { Text("Capture Photo") }
+        }) {
+            Text("Capture Photo")
+        }
     }
 }
+
 

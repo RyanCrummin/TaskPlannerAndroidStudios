@@ -1,5 +1,7 @@
 package com.example.taskplanner
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskplanner.data.entities.Note
@@ -21,18 +23,22 @@ class HomeViewModel(
 
     val allTasks2 = taskRepository.allTasks
 
+    @RequiresApi(Build.VERSION_CODES.O)
     val overdueTasks: StateFlow<List<Task>> = allTasks2
         .map { list -> list.filter { it.isOverdue() } }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    @RequiresApi(Build.VERSION_CODES.O)
     val upcomingTasks: StateFlow<List<Task>> = allTasks2
         .map { list -> list.filter { it.upcoming() } }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun Task.isOverdue(): Boolean {
         return this.date < LocalDate.now().toString()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun Task.upcoming(): Boolean {
         return this.date > LocalDate.now().toString()
     }
