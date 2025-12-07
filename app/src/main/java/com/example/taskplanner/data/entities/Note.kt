@@ -9,3 +9,8 @@ data class Note(
     val title: String,
     val content: String,
 )
+/*
+This is the entity class for the Notes
+
+This is just initialising the data structure for what data will be passed to the db
+ */

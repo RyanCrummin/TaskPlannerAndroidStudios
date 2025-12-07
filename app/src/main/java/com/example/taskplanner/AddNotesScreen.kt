@@ -16,16 +16,16 @@ fun AddNotesScreen(
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier
+    Column(modifier = Modifier // styling for the column
         .fillMaxSize()
         .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
-            value = title,
+            value = title, // Title input
             onValueChange = { title = it },
             label = { Text("Title") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth() // styling for input field
         )
 
         OutlinedTextField(
@@ -39,7 +39,7 @@ fun AddNotesScreen(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween // Spaces the buttons evenly
         ) {
             Button(onClick = {
                 if (title.isNotBlank() || content.isNotBlank()) {

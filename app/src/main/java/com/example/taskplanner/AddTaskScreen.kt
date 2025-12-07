@@ -157,7 +157,7 @@ fun AddTaskScreen(
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraPermissionWrapper(
+fun CameraPermissionWrapper( // this is for the camera permissions
     onGranted: @Composable () -> Unit
 ) {
     val permissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
@@ -201,7 +201,7 @@ fun CameraCapture(
             it.setSurfaceProvider(previewView.surfaceProvider)
         }
 
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA // camera defaults to the rear camera
 
         try {
             cameraProvider.unbindAll() // unbind previous cameras
@@ -232,7 +232,7 @@ fun CameraCapture(
             val file = File(context.cacheDir, "task_photo_${System.currentTimeMillis()}.jpg")
             val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
-            // Use the SAME imageCapture instance bound to lifecycle
+          // Inmgae capture
             imageCapture.takePicture(
                 outputOptions,
                 ContextCompat.getMainExecutor(context),
