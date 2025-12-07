@@ -61,7 +61,7 @@ fun HomeScreen(
         // ---------------- Overdue Tasks Box ----------------
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             val overdueTasks by viewModel.overdueTasks.collectAsState(initial = emptyList())
 
